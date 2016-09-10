@@ -13,14 +13,9 @@ import (
 )
 
 type Plugin struct {
-	metadata   Metadata
+	Metadata   Metadata
+	Settings   map[string]Setting
 	RouteSetup RouteSetup
-}
-
-func New(metadata Metadata) *Plugin {
-	return &Plugin{
-		metadata: metadata,
-	}
 }
 
 func (p *Plugin) Main() {
@@ -39,10 +34,10 @@ func (p *Plugin) Main() {
 
 func (p *Plugin) run(coreUrl string) error {
 	log.Printf("Starting plugin for homescreen using the plugin helper.")
-	log.Printf("  ID:          %s", p.metadata.ID)
-	log.Printf("  Name:        %s", p.metadata.Name)
-	log.Printf("  Version:     %s", p.metadata.Version)
-	log.Printf("  Description: %s", p.metadata.Description)
+	log.Printf("  ID:          %s", p.Metadata.ID)
+	log.Printf("  Name:        %s", p.Metadata.Name)
+	log.Printf("  Version:     %s", p.Metadata.Version)
+	log.Printf("  Description: %s", p.Metadata.Description)
 
 	engine, err := p.setupGin()
 	if err != nil {
@@ -80,7 +75,7 @@ func (p *Plugin) setupGin() (*gin.Engine, error) {
 
 	v1 := m.Group("/v1")
 	v1.GET("/metadata", func(c *gin.Context) {
-		c.JSON(http.StatusOK, p.metadata)
+		c.JSON(http.StatusOK, p.Metadata)
 	})
 
 	return m, nil

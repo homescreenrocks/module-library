@@ -9,26 +9,29 @@ import (
 )
 
 func main() {
-	app := &App{}
+	p := &plugin.Plugin{
+		Metadata: plugin.Metadata{
+			ID:          "example-plugin",
+			Name:        "Example Plugin",
+			Version:     "v0.0",
+			Description: "An example plugin.",
+		},
+		Settings: map[string]plugin.Setting{
+			"tz": plugin.Setting{
+				Default:   "",
+				Type:      "string",
+				Mandatory: false,
+				Value:     "Berlin",
+			},
+		},
+		RouteSetup: func(group *gin.RouterGroup) error {
+			group.GET("/date", func(c *gin.Context) {
+				c.JSON(http.StatusOK, time.Now().String())
+			})
 
-	p := plugin.New(plugin.Metadata{
-		ID:          "example-plugin",
-		Name:        "Example Plugin",
-		Version:     "v0.0",
-		Description: "An example plugin.",
-	})
+			return nil
+		},
+	}
 
-	p.RouteSetup = app.RouteSetup
 	p.Main()
-}
-
-type App struct {
-}
-
-func (app *App) RouteSetup(group *gin.RouterGroup) error {
-	group.GET("/date", func(c *gin.Context) {
-		c.JSON(http.StatusOK, time.Now().String())
-	})
-
-	return nil
 }
