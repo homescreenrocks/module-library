@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -49,17 +51,23 @@ func (p *Plugin) run(coreUrl string) error {
 		return fmt.Errorf("Failed started HTTP listener: %v", err)
 	}
 
+	cErr := make(chan error)
+	defer close(cErr)
+	go func() {
+		err := http.Serve(listner, engine)
+		if err != nil {
+			cErr <- fmt.Errorf("Failed server HTTP: %v", err)
+		}
+	}()
+
+	time.Sleep(3 * time.Second)
+
 	err = p.register(coreUrl, listner.Addr().String())
 	if err != nil {
 		return fmt.Errorf("Failed server HTTP: %v", err)
 	}
 
-	err = http.Serve(listner, engine)
-	if err != nil {
-		return fmt.Errorf("Failed server HTTP: %v", err)
-	}
-
-	return nil
+	return <-cErr
 }
 
 func (p *Plugin) setupGin() (*gin.Engine, error) {
@@ -89,7 +97,7 @@ func (p *Plugin) register(coreUrl string, pluginUrl string) error {
 
 	data, err := json.Marshal(req)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	buf := bytes.NewBuffer(data)
@@ -102,7 +110,12 @@ func (p *Plugin) register(coreUrl string, pluginUrl string) error {
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("unexpected response code %d", resp.StatusCode)
+		data, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+
+		return fmt.Errorf("unexpected response code %d: %s", resp.StatusCode, string(data))
 	}
 
 	return nil
