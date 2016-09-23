@@ -12,14 +12,14 @@ import (
 func main() {
 	m := new(module.Module)
 
-	m.Metadata = &shared.ModuleMetadata{
+	m.Metadata = shared.ModuleMetadata{
 		ID:          "example-module",
 		Name:        "Example Module",
 		Version:     "v0.0",
 		Description: "An example module.",
 	}
 
-	m.Settings = &shared.ModuleSettings{
+	m.Settings = shared.ModuleSettings{
 		shared.ModuleSetting{
 			Name:      "timezone",
 			Default:   "Berlin",
