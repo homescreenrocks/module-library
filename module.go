@@ -1,4 +1,4 @@
-package plugin
+package module
 
 import (
 	"bytes"
@@ -9,18 +9,17 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/homescreenrocks/homescreen/shared"
 )
 
-type Plugin struct {
-	Metadata   Metadata
-	Settings   map[string]Setting
+type Module struct {
+	shared.Module
 	RouteSetup RouteSetup
 }
 
-func (p *Plugin) Main() {
+func (p *Module) Main() {
 	if len(os.Args) != 2 {
 		fmt.Fprintf(os.Stderr, "Usage: %s <core-url>\n", os.Args[0])
 		os.Exit(2)
@@ -28,20 +27,20 @@ func (p *Plugin) Main() {
 
 	err := p.run(os.Args[1])
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to start plugin.\n")
+		fmt.Fprintf(os.Stderr, "Failed to start module.\n")
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
 }
 
-func (p *Plugin) run(coreUrl string) error {
-	log.Printf("Starting plugin for homescreen using the plugin helper.")
-	log.Printf("  ID:          %s", p.Metadata.ID)
-	log.Printf("  Name:        %s", p.Metadata.Name)
-	log.Printf("  Version:     %s", p.Metadata.Version)
-	log.Printf("  Description: %s", p.Metadata.Description)
+func (m *Module) run(coreUrl string) error {
+	log.Printf("Starting module for homescreen using the module helper.")
+	log.Printf("  ID:          %s", m.Metadata.ID)
+	log.Printf("  Name:        %s", m.Metadata.Name)
+	log.Printf("  Version:     %s", m.Metadata.Version)
+	log.Printf("  Description: %s", m.Metadata.Description)
 
-	engine, err := p.setupGin()
+	engine, err := m.setupGin()
 	if err != nil {
 		return err
 	}
@@ -51,48 +50,41 @@ func (p *Plugin) run(coreUrl string) error {
 		return fmt.Errorf("Failed started HTTP listener: %v", err)
 	}
 
-	cErr := make(chan error)
-	defer close(cErr)
-	go func() {
-		err := http.Serve(listner, engine)
-		if err != nil {
-			cErr <- fmt.Errorf("Failed server HTTP: %v", err)
-		}
-	}()
-
-	time.Sleep(3 * time.Second)
-
-	err = p.register(coreUrl, listner.Addr().String())
+	err = m.register(coreUrl, "http://"+listner.Addr().String())
 	if err != nil {
 		return fmt.Errorf("Failed server HTTP: %v", err)
 	}
 
-	return <-cErr
+	err = http.Serve(listner, engine)
+	if err != nil {
+		return fmt.Errorf("Failed server HTTP: %v", err)
+	}
+
+	return nil
 }
 
-func (p *Plugin) setupGin() (*gin.Engine, error) {
+func (p *Module) setupGin() (*gin.Engine, error) {
 	gin.SetMode(gin.ReleaseMode)
 	m := gin.Default()
 
 	if p.RouteSetup != nil {
-		err := p.RouteSetup(m.Group("/plugin"))
+		err := p.RouteSetup(m.Group("/module"))
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	v1 := m.Group("/v1")
-	v1.GET("/metadata", func(c *gin.Context) {
-		c.JSON(http.StatusOK, p.Metadata)
-	})
+	//v1 := m.Group("/v1")
 
 	return m, nil
 
 }
 
-func (p *Plugin) register(coreUrl string, pluginUrl string) error {
-	req := &RegisterRequest{
-		PluginUrl: pluginUrl,
+func (p *Module) register(coreUrl string, moduleUrl string) error {
+	req := &shared.Module{
+		ModuleURL: moduleUrl,
+		Metadata:  p.Metadata,
+		Settings:  p.Settings,
 	}
 
 	data, err := json.Marshal(req)
