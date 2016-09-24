@@ -95,7 +95,7 @@ func (p *Module) register(coreUrl string, moduleUrl string) error {
 	buf := bytes.NewBuffer(data)
 
 	resp, err := http.Post(
-		fmt.Sprintf("%s/api/v1/modules/register", coreUrl),
+		fmt.Sprintf("%s/api/v1/modules/", coreUrl),
 		"application/json", buf)
 	if err != nil {
 		return err
