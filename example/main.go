@@ -21,10 +21,43 @@ func main() {
 
 	m.Settings = shared.ModuleSettings{
 		shared.ModuleSetting{
-			Name:      "timezone",
+			Name:      "city",
 			Default:   "Berlin",
 			Type:      "string",
 			Mandatory: false,
+		},
+		shared.ModuleSetting{
+			Name:        "autopoll",
+			Default:     true,
+			Type:        "bool",
+			Mandatory:   false,
+			Description: "enables or disables something",
+		},
+		shared.ModuleSetting{
+			Name:        "pollinterval",
+			Default:     "10",
+			Type:        "number",
+			Mandatory:   true,
+			Description: "describes the interval on how often the modul should refresh the informations on the screen (in seconds)",
+		},
+		shared.ModuleSetting{
+			Name:      "date",
+			Default:   "2016-01-01",
+			Type:      "date",
+			Mandatory: false,
+		},
+		shared.ModuleSetting{
+			Name:      "time",
+			Default:   "15:00",
+			Type:      "time",
+			Mandatory: false,
+		},
+		shared.ModuleSetting{
+			Name:           "difficulty",
+			Default:        "easy",
+			Type:           "string",
+			Mandatory:      false,
+			PossibleValues: []string{"easy", "medium", "hard"},
 		},
 	}
 	m.RouteSetup = func(group *gin.RouterGroup) error {
