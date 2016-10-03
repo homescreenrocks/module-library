@@ -35,7 +35,7 @@ func main() {
 		},
 		shared.ModuleSetting{
 			Name:        "pollinterval",
-			Default:     "10",
+			Default:     10,
 			Type:        "number",
 			Mandatory:   true,
 			Description: "describes the interval on how often the modul should refresh the informations on the screen (in seconds)",
