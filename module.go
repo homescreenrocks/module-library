@@ -54,6 +54,7 @@ func (m *Module) run(coreUrl string) error {
 	if err != nil {
 		return fmt.Errorf("Failed server HTTP: %v", err)
 	}
+	fmt.Println("Server listens on: ", listner.Addr().String())
 
 	err = http.Serve(listner, engine)
 	if err != nil {

@@ -65,6 +65,23 @@ func main() {
 			c.JSON(http.StatusOK, time.Now().String())
 		})
 
+		templatesGroup := group.Group("/templates")
+		/*
+		templatesGroup.GET("/main.html",func( c *gin.Context){
+			c.Header("Content-Type", "text/html")
+			 c.String(http.StatusOK, "<h1>HELLO MODULE EXAMPLE-MODULE</h1>")
+		})
+		*/
+		templatesGroup.StaticFile("/main.html", "html/main.html")
+
+		jsGroup := group.Group("/js")
+		jsGroup.StaticFile("/ExampleModuleController.js", "js/ExampleModuleController.js")
+		/*jsGroup.GET("/ExampleModuleController.js", func(c *gin.Context){
+			c.Header("Content-Type", "application/x-javascript")
+			c.String(http.StatusOK, "")
+		})*/
+		
+		
 		return nil
 	}
 
