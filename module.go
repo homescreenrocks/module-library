@@ -73,6 +73,7 @@ func (p *Module) setupGin() (*gin.Engine, error) {
 		if err != nil {
 			return nil, err
 		}
+		m.GET("/hello", helloMessage)
 	}
 
 	//v1 := m.Group("/v1")
@@ -112,4 +113,10 @@ func (p *Module) register(coreUrl string, moduleUrl string) error {
 	}
 
 	return nil
+}
+
+func helloMessage(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"message": "IamAlive",
+	})
 }
